@@ -2,57 +2,48 @@
 //! # Adding this as a dependency
 //! ```rust, ignore
 //! [dependencies]
-//! wasmedge_hostfunctionexample_interface = "^1.0.0"
+//! wasmedge_hostfunctionmatrix_interface = "^1.0.0"
 //! ```
 //!
 //! # Bringing this into scope
 //! ```rust, ignore
-//! use wasmedge_hostfunctionexample_interface::*;
+//! use wasmedge_hostfunctionmatrix_interface::*;
 //! ```
-
 use std::ffi::CString;
 
-pub mod wasmedge_hostfunctionexample {
+pub mod wasmedge_hostfunctionmatrix {
     use std::os::raw::c_char;
-    #[link(wasm_import_module = "host_function_example")]
+    #[link(wasm_import_module = "host_function_matrix")]
     extern "C" {
-        pub fn host_function_example_set_class_id(cid: u32);
-        pub fn host_function_example_add_student(student: *const c_char, len: u32) -> u32;
-        pub fn host_function_example_set_class_name(name: *const c_char, len: u32);
-        pub fn host_function_example_print();
+        pub fn host_function_matrix_determinant(index: u32) -> f64;
+        pub fn host_function_matrix_print(index: u32);
+        pub fn host_function_matrix_input(newmatrix: *const c_char, len: u32) -> u32;
     }
 }
 
-pub fn set_class_id(cid: u32) {
+pub fn determinant(index: u32) -> f64 {
+    let res: f64;
     unsafe {
-        wasmedge_hostfunctionexample::host_function_example_set_class_id(cid);
+        res = wasmedge_hostfunctionmatrix::host_function_matrix_determinant(index);
+    }
+    res
+}
+
+
+pub fn print(index: u32) {
+    unsafe {
+        wasmedge_hostfunctionmatrix::host_function_matrix_print(index);
     }
 }
 
-pub fn set_class_name<S: AsRef<str>>(name: S) {
-    let name = CString::new((name.as_ref()).as_bytes()).expect("");
+pub fn input<S: AsRef<str>>(input: S) -> u32 {
+    let input = CString::new((input.as_ref()).as_bytes()).expect("");
+    let queue_size: u32;
     unsafe {
-        wasmedge_hostfunctionexample::host_function_example_set_class_name(
-            name.as_ptr(),
-            name.as_bytes().len() as u32,
+        queue_size = wasmedge_hostfunctionmatrix::host_function_matrix_input(
+            input.as_ptr(),
+            input.as_bytes().len() as u32,
             );
     }
-}
-
-pub fn add_student<S: AsRef<str>>(name: S) -> u32 {
-    let name = CString::new((name.as_ref()).as_bytes()).expect("");
-    let student_size: u32;
-    unsafe {
-        student_size = wasmedge_hostfunctionexample::host_function_example_add_student(
-            name.as_ptr(),
-            name.as_bytes().len() as u32,
-            );
-    }
-    student_size
-}
-
-pub fn print() {
-    unsafe {
-        wasmedge_hostfunctionexample::host_function_example_print();
-    }
+    queue_size
 }
